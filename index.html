@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Did you Claude it?</title>
+<meta name="description" content="For all those people who find it more convenient to ask you than to ask Claude.">
+<meta property="og:title" content="Did you Claude it?">
+<meta property="og:description" content="Someone asked you something Claude could have answered. Here's a link for them.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://didyouclaudeit.com/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23c96442'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='20' font-weight='700' text-anchor='middle' fill='white'%3E%3F%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #faf9f5;
+  --surface: #ffffff;
+  --surface-2: #f0eee6;
+  --text: #1f1e1d;
+  --text-muted: #6b6a66;
+  --border: #e3e0d6;
+  --accent: #c96442;
+  --accent-text: #ffffff;
+  --accent-soft: #f6e4dc;
+  --term-bg: #1d1c1a;
+  --term-text: #e8e6df;
+  --term-dim: #8f8c84;
+  --warn: #9a5b00;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1918;
+    --surface: #262624;
+    --surface-2: #30302d;
+    --text: #ece9e1;
+    --text-muted: #a3a097;
+    --border: #3b3a36;
+    --accent: #d97757;
+    --accent-text: #1a1918;
+    --accent-soft: #3a2a23;
+    --term-bg: #121211;
+    --warn: #e0a24a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1a1918;
+  --surface: #262624;
+  --surface-2: #30302d;
+  --text: #ece9e1;
+  --text-muted: #a3a097;
+  --border: #3b3a36;
+  --accent: #d97757;
+  --accent-text: #1a1918;
+  --accent-soft: #3a2a23;
+  --term-bg: #121211;
+  --warn: #e0a24a;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main { flex: 1; width: 100%; max-width: 720px; margin: 0 auto; padding: 40px 16px 24px; }
+h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  font-size: clamp(2rem, 6vw, 3rem);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0 0 8px;
+  text-align: center;
+}
+h1 a { color: inherit; text-decoration: none; }
+.tagline { text-align: center; color: var(--text-muted); margin: 0 0 32px; }
+[hidden] { display: none !important; }
+
+/* ---------- generator ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+label.field { display: block; font-weight: 600; font-size: .9rem; margin: 0 0 6px; }
+textarea, input[type="text"] {
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+textarea { min-height: 120px; resize: vertical; }
+textarea:focus, input[type="text"]:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+.meta-row { display: flex; justify-content: space-between; gap: 12px; font-size: .85rem; color: var(--text-muted); margin: 6px 0 18px; }
+.meta-row .over { color: var(--warn); font-weight: 600; }
+.targets { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 6px; border: 0; padding: 0; }
+.targets legend { font-weight: 600; font-size: .9rem; margin-bottom: 6px; padding: 0; }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.chip span {
+  display: inline-block;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-size: .9rem;
+  user-select: none;
+}
+.chip input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hint { font-size: .85rem; color: var(--text-muted); margin: 4px 0 18px; }
+.repo-field { margin-bottom: 18px; }
+.result { display: flex; gap: 8px; }
+.result input { flex: 1; min-width: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85rem; }
+button, .button {
+  font: inherit;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+  padding: 10px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+button.quiet, .button.quiet { background: transparent; color: var(--text); border-color: var(--border); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button:focus-visible, .button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.how { margin-top: 32px; color: var(--text-muted); font-size: .95rem; }
+.how h2 { font-size: 1rem; color: var(--text); margin: 0 0 8px; }
+.how ol { margin: 0; padding-left: 20px; }
+
+/* ---------- player ---------- */
+.step {
+  text-align: center;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.25rem, 4vw, 1.6rem);
+  min-height: 2.4em;
+  margin: 0 0 16px;
+}
+.stage { position: relative; }
+.mock {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.mock-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+.dots { display: flex; gap: 6px; }
+.dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--border); display: block; }
+.address {
+  flex: 1; min-width: 0;
+  font: .8rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text-muted);
+  background: var(--bg);
+  border-radius: 6px;
+  padding: 4px 10px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mock-body { padding: 28px 20px 24px; }
+.hello { text-align: center; font-family: Georgia, serif; font-size: 1.5rem; margin: 0 0 20px; }
+.composer {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg);
+  padding: 14px 14px 10px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.composer.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.typed {
+  min-height: 3em;
+  max-height: 12em;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.typed.empty::before { content: attr(data-placeholder); color: var(--text-muted); }
+.caret { display: inline-block; width: 2px; height: 1.1em; vertical-align: text-bottom; background: var(--accent); margin-left: 1px; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.composer-foot { display: flex; justify-content: flex-end; margin-top: 8px; }
+.send {
+  width: 34px; height: 34px; padding: 0; border-radius: 10px;
+  transition: transform .1s;
+}
+.send.pressed { transform: scale(.88); }
+.send svg { width: 16px; height: 16px; }
+
+/* terminal variant (Claude Code) */
+.mock.terminal { background: var(--term-bg); border-color: var(--term-bg); }
+.mock.terminal .mock-bar { background: #2a2926; border-color: #2a2926; }
+.mock.terminal .dots i { background: #4a4843; }
+.mock.terminal .address { background: #1d1c1a; color: var(--term-dim); }
+.mock.terminal .mock-body { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9rem; color: var(--term-text); }
+.mock.terminal .hello { font-family: inherit; font-size: .9rem; text-align: left; color: var(--term-dim); margin-bottom: 14px; }
+.mock.terminal .hello b { color: #d97757; font-weight: 600; }
+.mock.terminal .composer { background: transparent; border-color: #4a4843; border-radius: 6px; display: flex; gap: 8px; }
+.mock.terminal .composer.focus { border-color: #8f8c84; box-shadow: none; }
+.mock.terminal .composer::before { content: ">"; color: var(--term-dim); }
+.mock.terminal .typed { flex: 1; min-height: 1.5em; }
+.mock.terminal .typed.empty::before { color: #6b6963; }
+.mock.terminal .composer-foot { display: none; }
+.mock.terminal .term-hint { color: var(--term-dim); font-size: .8rem; margin-top: 8px; }
+
+.pointer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 22px; height: 22px;
+  pointer-events: none;
+  transform: translate(-60px, -60px);
+  transition: transform 1s cubic-bezier(.5,0,.2,1);
+  z-index: 2;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
+}
+.pointer.click { animation: click .25s; }
+@keyframes click { 50% { scale: .8; } }
+
+.done { margin-top: 24px; text-align: center; }
+.done p { margin: 0 0 12px; color: var(--text-muted); }
+.done .countdown { font-variant-numeric: tabular-nums; }
+.fallback { font-size: .9rem; color: var(--text-muted); margin-top: 12px; }
+.fallback a { color: var(--accent); }
+.repo-note { font-size: .85rem; color: var(--text-muted); text-align: center; margin: 10px 0 0; }
+.repo-note code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+footer { text-align: center; font-size: .8rem; color: var(--text-muted); padding: 16px; }
+footer a { color: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pointer { display: none; }
+  .caret { animation: none; }
+}
+</style>
+</head>
+<body>
+<main>
+  <h1><a href="./">Did you Claude it?</a></h1>
+  <p class="tagline" id="tagline">For all those people who find it more convenient to ask you than to ask Claude.</p>
+
+  <!-- Generator: shown when the page has no prompt -->
+  <section id="make" hidden>
+    <form class="card" id="make-form" autocomplete="off">
+      <label class="field" for="prompt">What should they have asked?</label>
+      <textarea id="prompt" placeholder="How do I undo my last git commit?" required></textarea>
+      <div class="meta-row"><span id="count">0 characters</span><span id="limit"></span></div>
+
+      <fieldset class="targets" id="targets">
+        <legend>Send them to</legend>
+      </fieldset>
+      <p class="hint" id="target-hint"></p>
+
+      <div class="repo-field" id="repo-field" hidden>
+        <label class="field" for="repo">Repository (optional)</label>
+        <input type="text" id="repo" placeholder="owner/name" spellcheck="false">
+        <p class="hint" style="margin-bottom:0">Opens their local clone of this GitHub repo, if Claude Code has seen it before.</p>
+      </div>
+
+      <label class="field" for="link">Your link</label>
+      <div class="result">
+        <input type="text" id="link" readonly placeholder="Type a question above">
+        <button type="button" id="copy" disabled>Copy</button>
+      </div>
+      <div class="actions">
+        <a class="button quiet" id="preview" href="#" aria-disabled="true">Preview it</a>
+        <button type="button" class="quiet" id="copy-md" disabled>Copy as Markdown</button>
+      </div>
+    </form>
+
+    <div class="how">
+      <h2>How it works</h2>
+      <ol>
+        <li>Type the question someone asked you instead of asking Claude.</li>
+        <li>Send them the link.</li>
+        <li>They watch it get typed for them, then land in Claude with the question filled in. They still press Enter themselves.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Player: shown when the URL carries ?q= -->
+  <section id="play" hidden aria-live="polite">
+    <p class="step" id="step">&nbsp;</p>
+    <div class="stage" id="stage">
+      <div class="mock" id="mock">
+        <div class="mock-bar"><div class="dots"><i></i><i></i><i></i></div><div class="address" id="address"></div></div>
+        <div class="mock-body">
+          <p class="hello" id="hello"></p>
+          <div class="composer" id="composer">
+            <div class="typed empty" id="typed" data-placeholder="How can I help you today?"></div>
+            <div class="composer-foot">
+              <button type="button" class="send" id="send" tabindex="-1" aria-hidden="true">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="term-hint" id="term-hint" hidden>? for shortcuts</div>
+        </div>
+      </div>
+      <svg class="pointer" id="pointer" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2l15 11.5-6.5 1L16 21l-3 1.4-3.6-6.6L4 20z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    </div>
+    <p class="repo-note" id="repo-note" hidden></p>
+
+    <div class="done" id="done" hidden>
+      <p id="done-text"></p>
+      <div class="actions" style="justify-content:center">
+        <a class="button" id="go" href="#">Open it</a>
+        <button type="button" class="quiet" id="stay" hidden>Stay here</button>
+      </div>
+      <p class="fallback" id="fallback" hidden></p>
+    </div>
+    <p class="fallback" style="text-align:center"><a href="./">Make your own</a></p>
+  </section>
+</main>
+<footer>
+  A joke, not a product. Not affiliated with Anthropic or OpenAI. Your prompt lives in the link and never touches a server.
+</footer>
+
+<script>
+"use strict";
+
+/*
+ * Each target is a destination with a documented "pre-fill the prompt" URL.
+ * None of them sends the prompt: the recipient always reads it and presses Enter.
+ *   claude   — https://claude.ai/new?q=
+ *   desktop  — claude://claude.ai/new?q=   (Claude Desktop, ~14,000 chars)
+ *   code     — claude-cli://open?q=&repo=  (Claude Code terminal, 5,000 chars max)
+ *   codex    — codex://new?prompt=         (Codex app)
+ *   chatgpt  — https://chatgpt.com/?q=
+ * App targets ("kind: app") use custom URL schemes, which a browser can't detect
+ * as installed, so the player never auto-redirects to them — it waits for a click.
+ */
+const TARGETS = {
+  claude: {
+    label: "Claude",
+    verb: "Claude",
+    kind: "web",
+    max: 8000,
+    address: "claude.ai/new",
+    hint: "Opens claude.ai in their browser. Works for anyone.",
+    url: (q) => "https://claude.ai/new?q=" + encodeURIComponent(q),
+  },
+  desktop: {
+    label: "Claude Desktop",
+    verb: "Claude",
+    kind: "app",
+    max: 14000,
+    address: "claude://claude.ai/new",
+    hint: "Opens the Claude desktop app. They need it installed.",
+    url: (q) => "claude://claude.ai/new?q=" + encodeURIComponent(q),
+  },
+  code: {
+    label: "Claude Code",
+    verb: "Claude Code",
+    kind: "app",
+    max: 5000,
+    terminal: true,
+    address: "claude-cli://open",
+    hint: "Opens Claude Code in a terminal. They need to have sent at least one prompt in Claude Code on that machine first.",
+    url: (q, repo) => "claude-cli://open?" + (repo ? "repo=" + encodeURIComponent(repo).replace("%2F", "/") + "&" : "") + "q=" + encodeURIComponent(q),
+  },
+  codex: {
+    label: "Codex",
+    verb: "Codex",
+    kind: "app",
+    max: 8000,
+    address: "codex://new",
+    hint: "Opens the Codex app. They need it installed.",
+    url: (q) => "codex://new?prompt=" + encodeURIComponent(q),
+  },
+  chatgpt: {
+    label: "ChatGPT",
+    verb: "ChatGPT",
+    kind: "web",
+    max: 8000,
+    address: "chatgpt.com",
+    hint: "Opens ChatGPT in their browser. For when Claude is too good for them.",
+    url: (q) => "https://chatgpt.com/?q=" + encodeURIComponent(q),
+  },
+};
+const DEFAULT_TARGET = "claude";
+const REPO_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+
+const $ = (id) => document.getElementById(id);
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function pageBase() {
+  return location.origin + location.pathname;
+}
+
+function shareLink(q, to, repo) {
+  const p = new URLSearchParams();
+  if (to !== DEFAULT_TARGET) p.set("to", to);
+  if (to === "code" && repo) p.set("repo", repo);
+  p.set("q", q);
+  // URLSearchParams writes spaces as "+", which reads better in a chat than %20.
+  return pageBase() + "?" + p.toString();
+}
+
+/* ---------------- generator ---------------- */
+
+function initMaker() {
+  $("make").hidden = false;
+  const targets = $("targets");
+  for (const [key, t] of Object.entries(TARGETS)) {
+    const label = document.createElement("label");
+    label.className = "chip";
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "to";
+    input.value = key;
+    input.checked = key === DEFAULT_TARGET;
+    const span = document.createElement("span");
+    span.textContent = t.label;
+    label.append(input, span);
+    targets.append(label);
+  }
+
+  const prompt = $("prompt"), repo = $("repo"), link = $("link");
+  const copy = $("copy"), copyMd = $("copy-md"), preview = $("preview");
+
+  function current() {
+    const to = targets.querySelector("input:checked").value;
+    return { to, t: TARGETS[to], q: prompt.value, repo: repo.value.trim() };
+  }
+
+  function update() {
+    const { to, t, q, repo: r } = current();
+    const len = q.length;
+    $("count").textContent = len.toLocaleString() + (len === 1 ? " character" : " characters");
+    const over = len > t.max;
+    $("limit").textContent = over ? t.label + " takes up to " + t.max.toLocaleString() : "";
+    $("limit").className = over ? "over" : "";
+    $("target-hint").textContent = t.hint;
+    $("repo-field").hidden = to !== "code";
+
+    const repoOk = to !== "code" || !r || REPO_RE.test(r);
+    repo.setCustomValidity(repoOk ? "" : "Use owner/name");
+    const ok = q.trim().length > 0 && !over && repoOk;
+    const url = ok ? shareLink(q, to, to === "code" && r ? r : "") : "";
+    link.value = url;
+    copy.disabled = copyMd.disabled = !ok;
+    preview.href = ok ? url : "#";
+    preview.setAttribute("aria-disabled", String(!ok));
+  }
+
+  async function copyText(text, button) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      link.select();
+      document.execCommand("copy");
+    }
+    const was = button.textContent;
+    button.textContent = "Copied";
+    setTimeout(() => (button.textContent = was), 1500);
+  }
+
+  prompt.addEventListener("input", update);
+  repo.addEventListener("input", update);
+  targets.addEventListener("change", update);
+  copy.addEventListener("click", () => copyText(link.value, copy));
+  copyMd.addEventListener("click", () => {
+    const { t } = current();
+    copyText("[Did you " + t.verb + " it?](" + link.value + ")", copyMd);
+  });
+  preview.addEventListener("click", (e) => { if (!link.value) e.preventDefault(); });
+  $("make-form").addEventListener("submit", (e) => e.preventDefault());
+  update();
+}
+
+/* ---------------- player ---------------- */
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function moveTo(el, dx = 0.5, dy = 0.5) {
+  const stage = $("stage").getBoundingClientRect();
+  const r = el.getBoundingClientRect();
+  const x = r.left - stage.left + r.width * dx;
+  const y = r.top - stage.top + r.height * dy;
+  $("pointer").style.transform = "translate(" + x + "px," + y + "px)";
+}
+
+async function click() {
+  const p = $("pointer");
+  p.classList.remove("click");
+  void p.offsetWidth;
+  p.classList.add("click");
+  await sleep(250);
+}
+
+async function typeOut(text) {
+  const typed = $("typed");
+  typed.classList.remove("empty");
+  const caret = document.createElement("span");
+  caret.className = "caret";
+  const node = document.createTextNode("");
+  typed.replaceChildren(node, caret);
+  if (reduceMotion) { node.data = text; return; }
+  // Long prompts still finish in a few seconds: type several characters per tick.
+  const total = Math.min(3800, Math.max(900, text.length * 45));
+  const tick = 30;
+  const per = Math.max(1, Math.ceil(text.length / (total / tick)));
+  for (let i = 0; i < text.length; i += per) {
+    node.data = text.slice(0, i + per);
+    typed.scrollTop = typed.scrollHeight;
+    await sleep(tick + (Math.random() * 30 - 10));
+  }
+}
+
+function initPlayer(params) {
+  const q = params.get("q");
+  const to = TARGETS[params.get("to")] ? params.get("to") : DEFAULT_TARGET;
+  const t = TARGETS[to];
+  const rawRepo = (params.get("repo") || "").trim();
+  const repo = to === "code" && REPO_RE.test(rawRepo) ? rawRepo : "";
+  const prompt = q.length > t.max ? q.slice(0, t.max) : q;
+  const dest = t.url(prompt, repo);
+
+  document.title = "Did you " + t.verb + " it?";
+  $("play").hidden = false;
+  $("tagline").hidden = true;
+  document.querySelector("h1 a").textContent = "Did you " + t.verb + " it?";
+  $("address").textContent = t.address;
+  $("go").href = dest;
+  $("go").textContent = "Open " + t.label;
+
+  if (t.terminal) {
+    $("mock").classList.add("terminal");
+    $("hello").innerHTML = "<b>✻</b> Welcome to Claude Code";
+    $("typed").dataset.placeholder = "Try \"how does this repo work?\"";
+    $("term-hint").hidden = false;
+  } else {
+    $("hello").textContent = "What can " + (to === "chatgpt" ? "I" : t.verb === "Codex" ? "Codex" : "Claude") + " help with?";
+  }
+  if (repo) {
+    $("repo-note").hidden = false;
+    $("repo-note").innerHTML = "Opens in your clone of <code></code>";
+    $("repo-note").querySelector("code").textContent = repo;
+  }
+
+  run(t, to, prompt, dest);
+}
+
+async function run(t, to, prompt, dest) {
+  const step = $("step");
+  const say = (s) => (step.textContent = s);
+  const wait = (ms) => sleep(reduceMotion ? 0 : ms);
+
+  say("Step 1: Open " + t.label + ".");
+  await wait(900);
+  if (!reduceMotion) { moveTo($("typed"), 0.15, 0.4); await wait(1050); await click(); }
+  $("composer").classList.add("focus");
+
+  say("Step 2: Type your question.");
+  await wait(300);
+  await typeOut(prompt);
+  await wait(400);
+
+  say("Step 3: Press Enter.");
+  if (!reduceMotion && !t.terminal) {
+    moveTo($("send"));
+    await wait(1050);
+    await click();
+    $("send").classList.add("pressed");
+    await sleep(120);
+    $("send").classList.remove("pressed");
+  } else {
+    await wait(900);
+  }
+  await wait(500);
+
+  say("Was that so hard?");
+  finish(t, to, prompt, dest);
+}
+
+function finish(t, to, prompt, dest) {
+  $("done").hidden = false;
+  const text = $("done-text");
+  const fallback = $("fallback");
+
+  if (t.kind === "web") {
+    // An https destination is safe to auto-open: it always loads something.
+    let n = 5;
+    let timer;
+    const render = () => {
+      text.textContent = "";
+      text.append("Taking you to " + t.label + " in ");
+      const c = document.createElement("span");
+      c.className = "countdown";
+      c.textContent = String(n);
+      text.append(c, "… Your question is already filled in. You just press Enter.");
+    };
+    render();
+    $("stay").hidden = false;
+    timer = setInterval(() => {
+      n -= 1;
+      if (n <= 0) { clearInterval(timer); location.href = dest; return; }
+      render();
+    }, 1000);
+    $("stay").addEventListener("click", () => {
+      clearInterval(timer);
+      text.textContent = "Fine, stay. Your question is waiting when you want it.";
+      $("stay").hidden = true;
+    });
+  } else {
+    // Custom schemes can't be detected as installed, and an unhandled one shows
+    // an error in some browsers, so the recipient clicks through themselves.
+    text.textContent = "Your question is ready in " + t.label + ". You just press Enter.";
+    fallback.hidden = false;
+    fallback.textContent = "";
+    fallback.append("Nothing happened? You might not have " + t.label + " installed" +
+      (to === "code" ? ", or haven't sent a prompt in it on this machine yet" : "") + ". ");
+    const a = document.createElement("a");
+    a.href = (to === "codex" ? TARGETS.chatgpt : TARGETS.claude).url(prompt);
+    a.textContent = "Ask " + (to === "codex" ? "ChatGPT" : "Claude") + " on the web instead";
+    fallback.append(a, ".");
+  }
+  $("go").focus({ preventScroll: true });
+}
+
+/* ---------------- boot ---------------- */
+
+const params = new URLSearchParams(location.search);
+if (params.get("q") && params.get("q").trim()) initPlayer(params);
+else initMaker();
+</script>
+</body>
+</html>
